@@ -35,6 +35,7 @@ p = [
 
 def calculate_score(person_index, list_of_loss_per_parameter_set):
     """
+    NOTE: this function is not guarenteed to be correct. It is just an inital pass at implementing the algorithm from the instructions pdf
     Example:
         n = 9;k = 4;m = 2
         parameter_set1 = (n, k, m)
@@ -57,6 +58,7 @@ def calculate_score(person_index, list_of_loss_per_parameter_set):
             person_2,
         ]
         
+        calculate_score(0, list_of_loss_per_parameter_set)
     """
     alpha, theta = calculate_score_part1_alphas_and_thetas(list_of_loss_per_parameter_set)
     loss_per_parameter_set = list_of_loss_per_parameter_set[person_index]
@@ -165,6 +167,7 @@ def calculate_score_part3(beta_scores):
     num_configurations = len(beta_scores)
     total_score = sum(beta_scores.values())
     score = total_score / num_configurations if num_configurations > 0 else 0
+    score = min(100, max(0, score))
     return score
 
 class Evaluator:
