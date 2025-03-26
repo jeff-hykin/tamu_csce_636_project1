@@ -2,6 +2,7 @@ import numpy as np
 import math
 from math import e 
 from collections import defaultdict
+import json
 
 n_k_m_pairs = [
     (9, 4, 2), 
