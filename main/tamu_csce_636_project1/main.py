@@ -359,7 +359,6 @@ class Evaluator:
         for ((parameter_set, each_list_of_matricies), list_of_correct_outputs) in zip(inputs.items(), outputs.values()):
             estimated_m_heights = [ 1 for each in each_list_of_matricies ]
             try:
-                print(f'''parameter_set = {parameter_set}''')
                 estimated_m_heights = func(*parameter_set, each_list_of_matricies)
                 # convert numpy matricies, torch tensors, etc. to pure python objects
                 estimated_m_heights = to_pure(estimated_m_heights)
