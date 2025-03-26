@@ -274,47 +274,110 @@ def to_pure(an_object, recursion_help=None):
 class Evaluator:
     def __init__(
         self,
+        first_name=None,
+        last_name=None,
+        email=None,
         print=True,
-        input_output_pairs=[
-            # n, k, m, p
-            ((5, 2, 0, p), 1),
-            ((5, 2, 2, p), 1.9242387),
-        ]
     ):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        if first_name == None or last_name == None or email == None:
+            raise ValueError("When creating an evalutor, first_name, last_name, and email must be set")
         self.should_print = print
-        self.input_output_pairs = input_output_pairs
-        for (index, ((n, k, m, p), correct_val)) in enumerate(self.input_output_pairs):
-            # make sure the matrix is pure, so that student's code isn't surprised when tested on pure data structures
-            self.input_output_pairs[index] = ((n, k, m, to_pure(p)), correct_val)
+    
+    def validate_test_data(self, inputs, outputs):
+        """
+        Parameters:
+            test_set (dict): A dictionary where keys are strings of the form '[n,k,m]' and values are lists of numpy matrices
+        """
+        test_set = inputs
+        # check the types and structure of the test set
+        if not isinstance(inputs, dict):
+            raise ValueError("inputs must be a dictionary")
+        
+        working_inputs = {}
+        for each_key, each_list_of_matricies in inputs.items():
+            if not isinstance(each_key, str) or not each_key.startswith("[") or not each_key.endswith("]"):
+                raise ValueError(f"inputs keys must be strings. Each should be of the form '[n,k,m]' with the letters replaced with numbers. The non-conforming key was: {each_key}")
+            if not isinstance(each_list_of_matricies, list):
+                raise ValueError(f"inputs values must be lists. each_list_of_matricies={each_list_of_matricies}")
+            for index,each_matrix in enumerate(each_list_of_matricies):
+                each_list_of_matricies[index] = each_matrix = np.array(each_matrix)
+                if each_matrix.ndim != 2:
+                    raise ValueError(f"inputs values must be lists of numpy matrices with 2 dimensions. each_matrix={each_matrix}")
+            working_inputs[each_key] = each_list_of_matricies
+        
+        if not isinstance(outputs, dict):
+            raise ValueError("outputs must be a dictionary")
+        
+        working_outputs = {}
+        for each_key, each_list_of_outputs in outputs.items():
+            each_list_of_outputs = to_pure(each_list_of_outputs)
+            if not isinstance(each_key, str) or not each_key.startswith("[") or not each_key.endswith("]"):
+                raise ValueError(f"outputs keys must be strings. Each should be of the form '[n,k,m]' with the letters replaced with numbers. The non-conforming key was: {each_key}")
+            if not isinstance(each_list_of_outputs, (list, tuple)):
+                raise ValueError(f"outputs values must be lists. each_list_of_outputs={each_list_of_outputs}")
+            if not all([ type(each) == int or type(each) == float for each in each_list_of_outputs ]):
+                raise ValueError(f"outputs values must be lists of numbers. each_list_of_outputs={each_list_of_outputs}")
+            working_outputs[each_key] = each_list_of_outputs
+        
+        return working_inputs, working_outputs
     
     def cost_function(self, real_value, guess):
         return (math.log2(real_value) - math.log2(guess)) ** 2
-
-    def eval(self, func):
+    
+    def eval(self, inputs=None, outputs=None, func=None):
         """
         Parameters:
-            print (bool): Whether to print the output
-            func (function): A function that takes in k (int), n (int), m (int), and p (numpy matrix) and returns the m-height value
+            inputs (dict): A dictionary where keys are strings of the form '[n,k,m]' and values are lists of P matrices
+            outputs (dict): A dictionary where keys are strings of the form '[n,k,m]' and values are lists of correct m-height values
+            func (function): A function that takes in k (int), n (int), m (int), and a list of P (numpy matrix) and returns a list of m-height values
         Returns:
             dict: A dictionary of scores per parameter set
         """
+        # If no inputs are given, then use the example case
+        if inputs == None:
+            inputs = {
+                '[5,2,2]': [
+                    np.array([
+                        [ 0.4759809,  0.9938236, 0.819425 ],
+                        [-0.8960798, -0.7442706, 0.3345122],
+                    ]),
+                ],
+            }
+            outputs = {
+                '[5,2,2]': [
+                    1.9242387,
+                ],
+            }
+        
         losses_per_parameter_set = defaultdict(lambda *args: [])
         had_errors = False
-        for index, ((n, k, m, p), correct_m_height) in enumerate(self.input_output_pairs):
-            given_m_height = 1
+        inputs, outputs = self.validate_test_data(inputs, outputs)
+        for ((parameter_set, each_list_of_matricies), list_of_correct_outputs) in zip(inputs.items(), outputs.values()):
+            estimated_m_heights = [ 1 for each in each_list_of_matricies ]
             try:
-                given_m_height = func(n, k, m, p)
-                if type(given_m_height) != float and type(given_m_height) != int:
-                    raise ValueError(f"the return value of the function given to .eval() is not a float. given_m_height={given_m_height}")
+                estimated_m_heights = func(*parameter_set, each_list_of_matricies)
+                # convert numpy matricies, torch tensors, etc. to pure python objects
+                estimated_m_heights = to_pure(estimated_m_heights)
+                # make sure the return value is a list or tuple
+                if not isinstance(estimated_m_heights, (list, tuple)):
+                    raise ValueError(f"For the n,k,m={parameter_set}, the return value of the function given to .eval() was not a list or tuple")
+                # make sure the return value is a list of numbers
+                if not all((type(each) == float or type(each) == int) for each in estimated_m_heights):
+                    raise ValueError(f"one of the return values of the function given to .eval() was not a float or int. estimated_m_heights={estimated_m_heights}, {[ type(each) for each in estimated_m_heights ]}")
             except Exception as error:
                 had_errors = True
                 if self.should_print:
-                    print(f"Error at index={index}\n    args: k={k}, n={n}, m={m}, p={p}\n    error={error}")
+                    print(f"Error at n,k,m={parameter_set}\n    error={error}")
                 else:
                     raise error
             
-            iter_loss = self.cost_function(correct_m_height, given_m_height)
-            losses_per_parameter_set[n, k, m].append(iter_loss)
+            losses_per_parameter_set[parameter_set] = [
+                self.cost_function(each_correct, each_given)
+                    for each_correct, each_given in zip(list_of_correct_outputs, estimated_m_heights)
+            ]
         
         # get average scores
         loss_per_parameter_set = defaultdict(lambda *args: 0)
@@ -322,7 +385,7 @@ class Evaluator:
             loss_per_parameter_set[each_parameter_set] = sum(each_set_of_scores) / len(each_set_of_scores)
         
         if self.should_print:
-            print(f"loss_per_parameter_set = {{")
+            print(f"σ = {{")
             print(f'''    # n, k, m''')
             for each_key, each_value in loss_per_parameter_set.items():
                 print(f'''    {each_key}: {each_value},''')
