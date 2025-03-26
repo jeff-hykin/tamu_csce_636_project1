@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "YOUR_PACKAGE_NAME"
+name = "tamu_csce_636_project1"
 version = "0.0.1"
-description = "YOUR_DESCRIPTION"
+description = "Just a tool for tamu_csce_636"
 authors=[]
 
 [tool.extra]
@@ -9,10 +9,10 @@ author='YOUR_NAME_14057'
 author_email='YOUR_EMAIL'
 url='YOUR_GIT_REPO_URL'
 license = "MIT"
-main_module_path = "main/YOUR_PACKAGE_NAME"
+main_module_path = "main/tamu_csce_636_project1"
 
 [[tool.extra.pure_python_packages]]
-path = "main/YOUR_PACKAGE_NAME"
+path = "main/tamu_csce_636_project1"
 
 [tool.poetry.dependencies]
 python = ">=3.7,<3.12"
