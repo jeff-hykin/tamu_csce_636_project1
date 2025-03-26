@@ -10,11 +10,25 @@ Just a tool for tamu_csce_636
 
 
 ```python
-from tamu_csce_636_project1 import grader
+from tamu_csce_636_project1 import Evaluator
 
-score = grader.grade(
-    print=False,
-    # your func needs to return the m-height value
-    lambda k,n,m,g: your_func_or_whatever(k,n,m,g)
+evaler = Evaluator(
+    print=True,
+    input_output_pairs=[
+        # n, k, m, p
+        ((5, 2, 0, p), 1),
+        ((5, 2, 2, p), 1.9242387),
+    ]
 )
+
+losses = evaler.eval(
+    # p will be a numpy matrix
+    # your_func_or_whatever() needs to return the m-height value
+    lambda n,k,m,p: your_func_or_whatever(n,k,m,p)
+)
+# losses = {
+#     # n, k, m
+#     (5, 2, 0): 0.0,
+#     (5, 2, 2): 0.8916794023379957,
+# }
 ```
