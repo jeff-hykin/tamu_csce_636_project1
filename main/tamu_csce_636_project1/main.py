@@ -307,7 +307,7 @@ class Evaluator:
                 each_list_of_matricies[index] = each_matrix = np.array(each_matrix)
                 if each_matrix.ndim != 2:
                     raise ValueError(f"inputs values must be lists of numpy matrices with 2 dimensions. each_matrix={each_matrix}")
-            working_inputs[json.loads(each_key)] = each_list_of_matricies
+            working_inputs[tuple(tuple(json.loads(each_key)))] = each_list_of_matricies
         
         if not isinstance(outputs, dict):
             raise ValueError("outputs must be a dictionary")
@@ -321,7 +321,7 @@ class Evaluator:
                 raise ValueError(f"outputs values must be lists. each_list_of_outputs={each_list_of_outputs}")
             if not all([ type(each) == int or type(each) == float for each in each_list_of_outputs ]):
                 raise ValueError(f"outputs values must be lists of numbers. each_list_of_outputs={each_list_of_outputs}")
-            working_outputs[json.loads(each_key)] = each_list_of_outputs
+            working_outputs[tuple(json.loads(each_key))] = each_list_of_outputs
         
         return working_inputs, working_outputs
     
