@@ -306,7 +306,7 @@ class Evaluator:
                 each_list_of_matricies[index] = each_matrix = np.array(each_matrix)
                 if each_matrix.ndim != 2:
                     raise ValueError(f"inputs values must be lists of numpy matrices with 2 dimensions. each_matrix={each_matrix}")
-            working_inputs[each_key] = each_list_of_matricies
+            working_inputs[json.loads(each_key)] = each_list_of_matricies
         
         if not isinstance(outputs, dict):
             raise ValueError("outputs must be a dictionary")
@@ -320,7 +320,7 @@ class Evaluator:
                 raise ValueError(f"outputs values must be lists. each_list_of_outputs={each_list_of_outputs}")
             if not all([ type(each) == int or type(each) == float for each in each_list_of_outputs ]):
                 raise ValueError(f"outputs values must be lists of numbers. each_list_of_outputs={each_list_of_outputs}")
-            working_outputs[each_key] = each_list_of_outputs
+            working_outputs[json.loads(each_key)] = each_list_of_outputs
         
         return working_inputs, working_outputs
     
@@ -358,6 +358,7 @@ class Evaluator:
         for ((parameter_set, each_list_of_matricies), list_of_correct_outputs) in zip(inputs.items(), outputs.values()):
             estimated_m_heights = [ 1 for each in each_list_of_matricies ]
             try:
+                print(f'''parameter_set = {parameter_set}''')
                 estimated_m_heights = func(*parameter_set, each_list_of_matricies)
                 # convert numpy matricies, torch tensors, etc. to pure python objects
                 estimated_m_heights = to_pure(estimated_m_heights)

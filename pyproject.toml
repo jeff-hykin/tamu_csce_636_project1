@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tamu_csce_636_project1"
-version = "0.0.2"
+version = "0.0.3"
 description = "Just a tool for tamu_csce_636"
 authors=[]
 
