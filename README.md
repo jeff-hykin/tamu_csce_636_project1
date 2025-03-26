@@ -12,6 +12,10 @@ Just a tool for tamu_csce_636
 ```python
 from tamu_csce_636_project1 import Evaluator
 
+p = [
+    [ 0.4759809,  0.9938236, 0.819425 ],
+    [-0.8960798, -0.7442706, 0.3345122],
+]
 evaler = Evaluator(
     print=True,
     input_output_pairs=[
@@ -22,8 +26,8 @@ evaler = Evaluator(
 )
 
 losses = evaler.eval(
-    # p will be a numpy matrix
-    # your_func_or_whatever() needs to return the m-height value
+    # p will be a list of lists (matrix)
+    # your_func_or_whatever() needs to return the m-height value as a python float
     lambda n,k,m,p: your_func_or_whatever(n,k,m,p)
 )
 # losses = {
